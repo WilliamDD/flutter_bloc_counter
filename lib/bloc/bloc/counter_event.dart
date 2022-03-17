@@ -5,6 +5,12 @@ abstract class CounterEvent {}
 
 class CounterInitialPressed extends CounterEvent {}
 
-class CounterIncrementPressed extends CounterEvent {}
+class CounterIncrementPressed extends CounterEvent {
+  CounterIncrementPressed(this.value);
+  final int value;
+}
 
-class CounterDecrementPressed extends CounterEvent {}
+class CounterDecrementPressed extends CounterEvent {
+  CounterDecrementPressed(this.value);
+  final int value;
+}

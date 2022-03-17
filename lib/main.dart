@@ -5,7 +5,9 @@ import 'bloc/bloc/counter_bloc.dart';
 
 void main() {
   BlocOverrides.runZoned(
-    () => runApp(const App()),
+    () => runApp(const MaterialApp(
+      home: CounterPage(),
+    )),
     blocObserver: AppBlocObserver(),
   );
 }
@@ -21,36 +23,6 @@ class AppBlocObserver extends BlocObserver {
   void onTransition(Bloc bloc, Transition transition) {
     super.onTransition(bloc, transition);
     print(transition);
-  }
-}
-
-class App extends StatelessWidget {
-  /// {@macro app}
-  const App({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => ThemeCubit(),
-      child: const AppView(),
-    );
-  }
-}
-
-class AppView extends StatelessWidget {
-  /// {@macro app_view}
-  const AppView({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ThemeCubit, ThemeData>(
-      builder: (_, theme) {
-        return MaterialApp(
-          theme: theme,
-          home: const CounterPage(),
-        );
-      },
-    );
   }
 }
 
@@ -76,9 +48,18 @@ class CounterView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Counter')),
       body: Center(
-        child: BlocBuilder<CounterBloc, int>(
-          builder: (context, count) {
-            return Text('$count', style: Theme.of(context).textTheme.headline1);
+        child: BlocBuilder<CounterBloc, CounterState>(
+          builder: (context, state) {
+            if (state is CounterInitial) {
+              return Text(state.value.toString(),
+                  style: Theme.of(context).textTheme.headline1);
+            } else if (state is CounterUpdated) {
+              return Text(state.value.toString(),
+                  style: Theme.of(context).textTheme.headline1);
+            } else {
+              return Text("Er is iets fout gegaan",
+                  style: Theme.of(context).textTheme.headline1);
+            }
           },
         ),
       ),
@@ -89,7 +70,7 @@ class CounterView extends StatelessWidget {
           FloatingActionButton(
             child: const Icon(Icons.add),
             onPressed: () {
-              context.read<CounterBloc>().add(CounterIncrementPressed());
+              context.read<CounterBloc>().add(CounterIncrementPressed(2));
             },
           ),
           FloatingActionButton(
@@ -102,42 +83,11 @@ class CounterView extends StatelessWidget {
           FloatingActionButton(
             child: const Icon(Icons.remove),
             onPressed: () {
-              context.read<CounterBloc>().add(CounterDecrementPressed());
-            },
-          ),
-          const SizedBox(height: 4),
-          FloatingActionButton(
-            child: const Icon(Icons.brightness_6),
-            onPressed: () {
-              context.read<ThemeCubit>().toggleTheme();
+              context.read<CounterBloc>().add(CounterDecrementPressed(2));
             },
           ),
         ],
       ),
     );
-  }
-}
-
-class ThemeCubit extends Cubit<ThemeData> {
-  /// {@macro brightness_cubit}
-  ThemeCubit() : super(_lightTheme);
-
-  static final _lightTheme = ThemeData(
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      foregroundColor: Colors.white,
-    ),
-    brightness: Brightness.light,
-  );
-
-  static final _darkTheme = ThemeData(
-    floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      foregroundColor: Colors.black,
-    ),
-    brightness: Brightness.dark,
-  );
-
-  /// Toggles the current brightness between light and dark.
-  void toggleTheme() {
-    emit(state.brightness == Brightness.dark ? _lightTheme : _darkTheme);
   }
 }
